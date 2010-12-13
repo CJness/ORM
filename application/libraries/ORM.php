@@ -177,7 +177,83 @@ class ORM {
   		return (isset($this->id) AND ! is_null($this->id));
   	}
 	
-	function explain() 
+	function save()
+	{
+		$arguments = func_get_args();
+		
+		foreach ($arguments as $arg)
+		{
+			switch (TRUE)
+			{
+				case ($arg instanceof a):
+				
+				break;
+				
+				case is_object($arg):
+				
+				break;
+				
+				case is_array($arg):
+					$this->fill_object($arg);
+				break;
+			}
+		}
+		
+		$this->sanitize();
+		
+		if ($this->exists())
+		{
+			$this->update();
+		}
+		else
+		{
+			$this->insert();
+		}
+	}
+	
+	protected function insert()
+	{
+		if ($this->CI()->db->insert($this->table(), get_object_vars($this))) 
+		{
+			if ($id = $this->CI()->db->insert_id())
+			{
+				$this->id = $id;
+			}
+			
+			$this->CI()->db->cache_delete_all();
+			
+			return TRUE;
+		}
+		
+		return FALSE;
+	}
+	
+	protected function update()
+	{
+		$this->set_where($this->id);
+		
+		if ($this->CI()->db->update($this->table(), get_object_vars($this))) 
+		{
+			$this->CI()->db->cache_delete_all();
+	
+	   		return TRUE;
+	    }
+
+    	return FALSE;
+	}
+	
+	function sanitize()
+	{
+		foreach ($this as $key => $val)
+		{
+			if ( ! array_key_exists($key, $this->get_fields()))
+			{
+				unset($this->{$key});
+			}
+		}
+	}
+	
+	protected function explain() 
 	{
 		foreach ($this->CI()->db->query("EXPLAIN `".$this->table()."`")->result() as $field) 
     	{
@@ -217,6 +293,12 @@ class ORM {
 			
 		if ( ! $where) 
 		{
+			return;
+		}
+		elseif (is_numeric($where))
+		{
+			$this->CI()->db->where($this->table().'.id', (int) $where);
+			
 			return;
 		}
 		
