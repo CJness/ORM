@@ -199,8 +199,6 @@ class ORM {
 			}
 		}
 		
-		$this->sanitize();
-		
 		if ($this->exists())
 		{
 			$this->update();
@@ -213,7 +211,7 @@ class ORM {
 	
 	protected function insert()
 	{
-		if ($this->CI()->db->insert($this->table(), get_object_vars($this))) 
+		if ($this->CI()->db->insert($this->table(), $this->sanitize())) 
 		{
 			if ($id = $this->CI()->db->insert_id())
 			{
@@ -232,7 +230,7 @@ class ORM {
 	{
 		$this->set_where($this->id);
 		
-		if ($this->CI()->db->update($this->table(), get_object_vars($this))) 
+		if ($this->CI()->db->update($this->table(), $this->sanitize())) 
 		{
 			$this->CI()->db->cache_delete_all();
 	
@@ -244,13 +242,17 @@ class ORM {
 	
 	function sanitize()
 	{
+		$array = array();
+	
 		foreach ($this as $key => $val)
 		{
-			if ( ! array_key_exists($key, $this->get_fields()))
+			if (array_key_exists($key, $this->get_fields()))
 			{
-				unset($this->{$key});
+				$array[ $key ] = $val;
 			}
 		}
+		
+		return $array;
 	}
 	
 	protected function explain() 
