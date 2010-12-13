@@ -339,6 +339,11 @@ class a extends ArrayObject {
 		return end($this);
 	}
 	
+	function count()
+	{
+		return count($this);
+	}
+	
 }
 
 spl_autoload_register('orm_autoload');
