@@ -210,34 +210,33 @@ class ORM {
 	
 	function save_relation($relation)
 	{
-		$class = strtolower(get_class($relation));
+		$this_class     = strtolower(get_class($this));
+		$relation_class = strtolower(get_class($relation));
 		
 		switch (TRUE)
 		{
-			case in_array($class, $this->has_many()):
-				if (in_array(strtolower(get_class($this)), $relation->has_many()))
-				{
-					$data = array(
-						$this->get_foreign_key() => $this->id,
-						$relation->get_foreign_key() => $relation->id
-					);
+			case (in_array($relation_class, $this->has_many()) AND in_array($this_class, $relation->has_many())):
+				$data = array(
+					$this->get_foreign_key() => $this->id,
+					$relation->get_foreign_key() => $relation->id
+				);
 				
-					$this->CI()->db->insert($this->format_join_table($this->table(), $relation->table()), $data);
-				}
-				else
-				{
-					$relation->{$this->get_foreign_key()} = $this->id;
-				}
+				$this->CI()->db->insert($this->format_join_table($this->table(), $relation->table()), $data);
 				
 				$relation->save();
 			break;
 			
-			case in_array($class, $this->has_one()):
+			case in_array($relation_class, $this->has_many()):
 				$relation->{$this->get_foreign_key()} = $this->id;
 				$relation->save();
 			break;
 			
-			case in_array($class, $this->belongs_to()):
+			case in_array($relation_class, $this->has_one()):
+				$relation->{$this->get_foreign_key()} = $this->id;
+				$relation->save();
+			break;
+			
+			case in_array($relation_class, $this->belongs_to()):
 				$relation->save();
 				
 				$this->{$relation->get_foreign_key()} = $relation->id;
@@ -274,6 +273,80 @@ class ORM {
 	    }
 
     	return FALSE;
+	}
+	
+	function delete()
+	{
+		$arguments = func_get_args();
+		
+		foreach ($arguments as $arg)
+		{
+			switch (TRUE)
+			{
+				case ($arg instanceof a):
+					foreach ($arg as $object)
+					{
+						$this->delete_relation($object);
+					}
+				break;
+				
+				case is_object($arg):
+					$this->delete_relation($arg);
+				break;
+			}
+		}
+		
+		if ( ! count($arguments) AND $this->exists())
+		{
+			foreach ($this->has_many() as $relation)
+			{
+				foreach ($this->$relation()->all() as $object)
+				{	
+					$this->delete_relation($object);
+				}
+			}
+			
+			foreach ($this->has_one() as $relation)
+			{
+				$this->delete_relation($this->$relation());
+			}
+		
+			$where = array(
+				'id' => $this->id
+			);
+		
+			return $this->CI()->db->delete($this->table(), $where);
+		}
+	}
+	
+	function delete_relation($relation)
+	{
+		if ( ! $relation->exists())
+		{
+			return;
+		}
+	
+		$this_class     = strtolower(get_class($this));
+		$relation_class = strtolower(get_class($relation));
+		
+		switch (TRUE)
+		{
+			case (in_array($relation_class, $this->has_many()) AND in_array($this_class, $relation->has_many())):
+				$where = array(
+					$this->get_foreign_key() => $this->id,
+					$relation->get_foreign_key() => $relation->id
+				);
+				
+				$this->CI()->db->delete($this->format_join_table($this->table(), $relation->table()), $where);
+			break;
+			
+			case (in_array($relation_class, $this->has_many()) AND in_array($this_class, $relation->belongs_to())):
+			case in_array($relation_class, $this->has_one()):
+			case in_array($relation_class, $this->belongs_to()):
+				$relation->{$this->get_foreign_key()} = NULL;
+				$relation->save();
+			break;
+		}
 	}
 	
 	protected function sanitize()
@@ -321,9 +394,7 @@ class ORM {
 	}
 	
 	function set_where($where = NULL) 
-	{
-		$this->CI()->db->select($this->table().'.*');
-	
+	{	
 		foreach ($this->belongs_to() as $relation)
 		{
 			$foreign_key = strtolower($relation).'_id';
@@ -371,6 +442,8 @@ class ORM {
 				$this->CI()->db->where($field, $value);
 			}
     	}
+    	
+    	$this->CI()->db->select($this->table().'.*');
 	}
 	
 	function set_options($options = NULL) 
