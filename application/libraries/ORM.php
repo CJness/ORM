@@ -4,8 +4,8 @@
  * ORM
  *
  * @author		Clifford James
- * @link 		http://cliffordjames.nl/
- * @version		2010.12.10 PHP 5.2
+ * @link 		http://cliffordjames.nl/ https://github.com/CJness/ORM
+ * @phpversion	5.2
  */
 class ORM {
 
@@ -200,11 +200,11 @@ class ORM {
 		
 		if ($this->exists())
 		{
-			$this->update();
+			return $this->update();
 		}
 		else
 		{
-			$this->insert();
+			return $this->insert();
 		}
 	}
 	
@@ -215,8 +215,20 @@ class ORM {
 		switch (TRUE)
 		{
 			case in_array($class, $this->has_many()):
-				$relation->{$this->get_foreign_key()} = $this->id;
-				var_dump($relation);
+				if (in_array(strtolower(get_class($this)), $relation->has_many()))
+				{
+					$data = array(
+						$this->get_foreign_key() => $this->id,
+						$relation->get_foreign_key() => $relation->id
+					);
+				
+					$this->CI()->db->insert($this->format_join_table($this->table(), $relation->table()), $data);
+				}
+				else
+				{
+					$relation->{$this->get_foreign_key()} = $this->id;
+				}
+				
 				$relation->save();
 			break;
 			
@@ -264,7 +276,7 @@ class ORM {
     	return FALSE;
 	}
 	
-	function sanitize()
+	protected function sanitize()
 	{
 		$array = array();
 	
@@ -406,16 +418,16 @@ class ORM {
 	{
 		$join_table = $this->format_join_table($this->table(), $relation->table());
 
-    	$this->CI()->db->join($join_table, $join_table.'.'.$this->get_foreign_key() .' = '.$this->table().'.id', 'right');
+    	$this->CI()->db->join($join_table, $join_table.'.'.$this->get_foreign_key().' = '.$this->table().'.id', 'right');
     	$this->CI()->db->where($join_table.'.'.$relation->get_foreign_key(), $this->{$relation->get_foreign_key()});
 	}
 	
 	function format_join_table() 
   	{
-    	$table_array = func_get_args();
-    	sort($table_array);
+    	$tables = func_get_args();
+    	sort($tables);
     	
-    	return implode('_', $table_array);
+    	return implode('_', $tables);
   	}
 	
 	function fill_object($data = NULL)
