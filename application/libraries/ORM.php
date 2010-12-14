@@ -58,13 +58,12 @@ class ORM {
 	{
 		$relation 	 = ucfirst($method);
 		$relation 	 = new $relation();
-		$foreign_key = strtolower(get_class($this)).'_id';
 		
 		if (is_numeric($data))
 		{
 			$where = array(
 				'id' => (int) $data,
-				$foreign_key => (int) $this->id
+				$this->get_foreign_key() => (int) $this->id
 			);
 			
 			$relation->find_one($where);
@@ -72,7 +71,7 @@ class ORM {
 		else
 		{
 			$relation->fill_object($data);		
-			$relation->{$foreign_key} = (int) $this->id;
+			$relation->{$this->get_foreign_key()} = (int) $this->id;
 		}
 		
 		return $relation;
@@ -82,10 +81,8 @@ class ORM {
 	{
 		$relation 	 = ucfirst($method);
 		$relation 	 = new $relation();
-		$foreign_key = strtolower(get_class($this)).'_id';
-		
 		$where = array(
-			$foreign_key => (int) $this->id
+			$this->get_foreign_key() => (int) $this->id
 		);
 		
 		if (is_numeric($data))
@@ -107,9 +104,8 @@ class ORM {
   	{
   		$relation 	 = ucfirst($method);
   		$relation 	 = new $relation();
-  		$foreign_key = strtolower($method).'_id';
   		
-  		$relation->find_one($this->{$foreign_key});
+  		$relation->find_one($this->{$relation->get_foreign_key()});
   		
   		if (is_array($data) OR is_object($data))
   		{
@@ -186,11 +182,14 @@ class ORM {
 			switch (TRUE)
 			{
 				case ($arg instanceof a):
-				
+					foreach ($arg as $object)
+					{
+						$this->save_relation($object);
+					}
 				break;
 				
 				case is_object($arg):
-				
+					$this->save_relation($arg);
 				break;
 				
 				case is_array($arg):
@@ -206,6 +205,31 @@ class ORM {
 		else
 		{
 			$this->insert();
+		}
+	}
+	
+	function save_relation($relation)
+	{
+		$class = strtolower(get_class($relation));
+		
+		switch (TRUE)
+		{
+			case in_array($class, $this->has_many()):
+				$relation->{$this->get_foreign_key()} = $this->id;
+				var_dump($relation);
+				$relation->save();
+			break;
+			
+			case in_array($class, $this->has_one()):
+				$relation->{$this->get_foreign_key()} = $this->id;
+				$relation->save();
+			break;
+			
+			case in_array($class, $this->belongs_to()):
+				$relation->save();
+				
+				$this->{$relation->get_foreign_key()} = $relation->id;
+			break;
 		}
 	}
 	
@@ -279,6 +303,11 @@ class ORM {
 		return $this->CI()->db->tables[ $this->table() ];
 	}
 	
+	function get_foreign_key()
+	{
+		return strtolower(get_class($this)).'_id';
+	}
+	
 	function set_where($where = NULL) 
 	{
 		$this->CI()->db->select($this->table().'.*');
@@ -290,6 +319,16 @@ class ORM {
 			if (isset($this->{$foreign_key}) AND ! is_null($this->{$foreign_key}))
 			{
 				$where[ $foreign_key ] = $this->{$foreign_key};
+			}
+		}
+		
+		foreach ($this->has_many() as $relation)
+		{
+			$foreign_key = strtolower($relation).'_id';
+		
+			if (isset($this->{$foreign_key}) AND ! is_null($this->{$foreign_key}))
+			{
+				$this->set_join(new $relation);
 			}
 		}
 			
@@ -362,6 +401,22 @@ class ORM {
 	      	}
 	    }
 	}
+	
+	function set_join($relation) 
+	{
+		$join_table = $this->format_join_table($this->table(), $relation->table());
+
+    	$this->CI()->db->join($join_table, $join_table.'.'.$this->get_foreign_key() .' = '.$this->table().'.id', 'right');
+    	$this->CI()->db->where($join_table.'.'.$relation->get_foreign_key(), $this->{$relation->get_foreign_key()});
+	}
+	
+	function format_join_table() 
+  	{
+    	$table_array = func_get_args();
+    	sort($table_array);
+    	
+    	return implode('_', $table_array);
+  	}
 	
 	function fill_object($data = NULL)
 	{
