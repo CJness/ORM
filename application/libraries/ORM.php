@@ -435,6 +435,11 @@ class ORM {
 	 */
 	function delete()
 	{
+		if ( ! $this->exists())
+		{
+			return FALSE;
+		}
+	
 		$arguments = func_get_args();
 		
 		foreach ($arguments as $arg)
@@ -454,7 +459,7 @@ class ORM {
 			}
 		}
 		
-		if ( ! count($arguments) AND $this->exists())
+		if ( ! count($arguments))
 		{
 			foreach ($this->has_many() as $relation)
 			{
