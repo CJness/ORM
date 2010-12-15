@@ -97,6 +97,17 @@ class ORM {
 	}
 	
 	/**
+	 * validation function.
+	 * 
+	 * @access public
+	 * @return array
+	 */
+	function validation()
+	{
+		return array();
+	}
+	
+	/**
 	 * CI function.
 	 * 
 	 * @access public
