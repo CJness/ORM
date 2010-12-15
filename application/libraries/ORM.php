@@ -45,6 +45,11 @@ class ORM {
 	 */
 	function __call($method, $arguments) 
 	{
+		if ( ! $this->exists())
+		{
+			return;
+		}
+	
 		$arguments = (isset($arguments[0])) ? $arguments[0] : NULL;
 	
 		switch (TRUE)
