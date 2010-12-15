@@ -358,6 +358,11 @@ class ORM {
 			}
 		}
 		
+		if ( ! $this->validate())
+		{
+			return FALSE;
+		}
+		
 		if ($this->exists())
 		{
 			return $this->update();
