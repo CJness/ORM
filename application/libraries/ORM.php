@@ -305,6 +305,27 @@ class ORM {
   	{
   		return (isset($this->id) AND ! is_null($this->id));
   	}
+  	
+  	function validate($rules = NULL)
+  	{
+  		if ( ! is_array($rules))
+  		{
+  			$rules = $this->validation();
+  		}
+  		
+  		if ( ! count($rules))
+  		{
+  			return TRUE;
+  		}
+  		
+  		$this->CI()->load->library('form_validation');
+    	$this->CI()->load->library('ORM_validation');
+    		
+ 		$validation = new ORM_validation();
+   		$results    = $validation->validate($this, $rules);
+
+		return ( ! is_array($results));
+  	}
 	
 	/**
 	 * save function.
