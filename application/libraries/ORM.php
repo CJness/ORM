@@ -9,6 +9,13 @@
  */
 class ORM {
 
+	/**
+	 * __construct function.
+	 * 
+	 * @access public
+	 * @param mixed $params (default: NULL)
+	 * @return void
+	 */
 	function __construct($params = NULL) 
 	{
 		switch (TRUE) 
@@ -28,6 +35,14 @@ class ORM {
     	}
 	}
 	
+	/**
+	 * __call function.
+	 * 
+	 * @access public
+	 * @param string $method
+	 * @param array $arguments
+	 * @return object (relation)
+	 */
 	function __call($method, $arguments) 
 	{
 		$arguments = (isset($arguments[0])) ? $arguments[0] : NULL;
@@ -48,12 +63,58 @@ class ORM {
 		}
 	}
 	
-	function has_many()   { return array(); }
-	function has_one()    { return array(); }
-	function belongs_to() { return array(); }
+	/**
+	 * has_many function.
+	 * 
+	 * @access public
+	 * @return array
+	 */
+	function has_many() 
+	{ 
+		return array(); 
+	}
 	
-	function CI() { return get_instance(); }
+	/**
+	 * has_one function.
+	 * 
+	 * @access public
+	 * @return array
+	 */
+	function has_one() 
+	{ 
+		return array(); 
+	}
 	
+	/**
+	 * belongs_to function.
+	 * 
+	 * @access public
+	 * @return array
+	 */
+	function belongs_to() 
+	{ 
+		return array(); 
+	}
+	
+	/**
+	 * CI function.
+	 * 
+	 * @access public
+	 * @return object (CodeIgniter)
+	 */
+	function CI() 
+	{ 
+		return get_instance(); 
+	}
+		
+	/**
+	 * return_has_many function.
+	 * 
+	 * @access public
+	 * @param string $method
+	 * @param mixed $data (default: NULL)
+	 * @return object (relation)
+	 */
 	function return_has_many($method, $data = NULL) 
 	{
 		$relation 	 = ucfirst($method);
@@ -77,6 +138,14 @@ class ORM {
 		return $relation;
 	}
 	
+	/**
+	 * return_has_one function.
+	 * 
+	 * @access public
+	 * @param string $method
+	 * @param mixed $data (default: NULL)
+	 * @return object (relation)
+	 */
 	function return_has_one($method, $data = NULL)
 	{
 		$relation 	 = ucfirst($method);
@@ -100,6 +169,14 @@ class ORM {
 		return $relation;
 	}
 	
+	/**
+	 * return_belongs_to function.
+	 * 
+	 * @access public
+	 * @param string $method
+	 * @param mixed $data (default: NULL)
+	 * @return object (relation)
+	 */
 	function return_belongs_to($method, $data = NULL) 
   	{
   		$relation 	 = ucfirst($method);
@@ -115,6 +192,14 @@ class ORM {
 		return $relation;
   	}
 	
+	/**
+	 * find function.
+	 * 
+	 * @access public
+	 * @param mixed $where (default: NULL)
+	 * @param array $options (default: NULL)
+	 * @return object (a object with relation(s))
+	 */
 	function find($where = NULL, $options = NULL)
 	{
 		if (is_numeric($where)) 
@@ -128,11 +213,26 @@ class ORM {
 		return $this->fill_objects($this->CI()->db->get($this->table())->result());
 	}
 	
+	/**
+	 * all function.
+	 * 
+	 * @access public
+	 * @param array $options (default: NULL)
+	 * @return object (a object with relation(s))
+	 */
 	function all($options = NULL)
 	{
 		return $this->find(NULL, $options);
 	}
 	
+	/**
+	 * find_one function.
+	 * 
+	 * @access public
+	 * @param mixed $where (default: NULL)
+	 * @param array $options (default: NULL)
+	 * @return object (relation)
+	 */
 	function find_one($where = NULL, $options = NULL)
 	{
 		$options['limit'] = 1;
@@ -148,6 +248,14 @@ class ORM {
 		return $this->fill_object($this->CI()->db->get($this->table())->row());
 	}
 	
+	/**
+	 * first function.
+	 * 
+	 * @access public
+	 * @param mixed $where (default: NULL)
+	 * @param array $options (default: NULL)
+	 * @return object (relation)
+	 */
 	function first($where = NULL, $options = NULL) 
 	{	
 		if ( ! isset($options['order_by'])) 
@@ -158,6 +266,14 @@ class ORM {
 		return $this->find_one($where, $options);
 	}
 	
+	/**
+	 * last function.
+	 * 
+	 * @access public
+	 * @param mixed $where (default: NULL)
+	 * @param array $options (default: NULL)
+	 * @return object (relation)
+	 */
 	function last($where = NULL, $options = NULL) 
 	{
 		if ( ! isset($options['order_by'])) 
@@ -168,11 +284,23 @@ class ORM {
 		return $this->find_one($where, $options);
 	}
 	
+	/**
+	 * exists function.
+	 * 
+	 * @access public
+	 * @return boolean
+	 */
 	function exists()
   	{
   		return (isset($this->id) AND ! is_null($this->id));
   	}
 	
+	/**
+	 * save function.
+	 * 
+	 * @access public
+	 * @return boolean
+	 */
 	function save()
 	{
 		$arguments = func_get_args();
@@ -208,6 +336,13 @@ class ORM {
 		}
 	}
 	
+	/**
+	 * save_relation function.
+	 * 
+	 * @access public
+	 * @param object $relation
+	 * @return void
+	 */
 	function save_relation($relation)
 	{
 		$this_class     = strtolower(get_class($this));
@@ -244,6 +379,12 @@ class ORM {
 		}
 	}
 	
+	/**
+	 * insert function.
+	 * 
+	 * @access protected
+	 * @return boolean
+	 */
 	protected function insert()
 	{
 		if ($this->CI()->db->insert($this->table(), $this->sanitize())) 
@@ -261,6 +402,12 @@ class ORM {
 		return FALSE;
 	}
 	
+	/**
+	 * update function.
+	 * 
+	 * @access protected
+	 * @return boolean
+	 */
 	protected function update()
 	{
 		$this->set_where($this->id);
@@ -275,6 +422,12 @@ class ORM {
     	return FALSE;
 	}
 	
+	/**
+	 * delete function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
 	function delete()
 	{
 		$arguments = func_get_args();
@@ -319,6 +472,13 @@ class ORM {
 		}
 	}
 	
+	/**
+	 * delete_relation function.
+	 * 
+	 * @access public
+	 * @param object $relation
+	 * @return void
+	 */
 	function delete_relation($relation)
 	{
 		if ( ! $relation->exists())
@@ -349,6 +509,12 @@ class ORM {
 		}
 	}
 	
+	/**
+	 * sanitize function.
+	 * 
+	 * @access protected
+	 * @return array
+	 */
 	protected function sanitize()
 	{
 		$array = array();
@@ -364,6 +530,12 @@ class ORM {
 		return $array;
 	}
 	
+	/**
+	 * explain function.
+	 * 
+	 * @access protected
+	 * @return void
+	 */
 	protected function explain() 
 	{
 		foreach ($this->CI()->db->query("EXPLAIN `".$this->table()."`")->result() as $field) 
@@ -378,6 +550,12 @@ class ORM {
     	}
 	}
 	
+	/**
+	 * get_fields function.
+	 * 
+	 * @access public
+	 * @return array
+	 */
 	function get_fields()
 	{
 		if ( ! isset($this->CI()->db->tables[ $this->table() ]))
@@ -388,11 +566,24 @@ class ORM {
 		return $this->CI()->db->tables[ $this->table() ];
 	}
 	
+	/**
+	 * get_foreign_key function.
+	 * 
+	 * @access public
+	 * @return string
+	 */
 	function get_foreign_key()
 	{
 		return strtolower(get_class($this)).'_id';
 	}
 	
+	/**
+	 * set_where function.
+	 * 
+	 * @access public
+	 * @param mixed $where (default: NULL)
+	 * @return void
+	 */
 	function set_where($where = NULL) 
 	{	
 		foreach ($this->belongs_to() as $relation)
@@ -446,6 +637,13 @@ class ORM {
     	$this->CI()->db->select($this->table().'.*');
 	}
 	
+	/**
+	 * set_options function.
+	 * 
+	 * @access public
+	 * @param array $options (default: NULL)
+	 * @return void
+	 */
 	function set_options($options = NULL) 
 	{
 		if ( ! $options) 
@@ -487,6 +685,13 @@ class ORM {
 	    }
 	}
 	
+	/**
+	 * set_join function.
+	 * 
+	 * @access public
+	 * @param object $relation
+	 * @return void
+	 */
 	function set_join($relation) 
 	{
 		$join_table = $this->format_join_table($this->table(), $relation->table());
@@ -495,6 +700,12 @@ class ORM {
     	$this->CI()->db->where($join_table.'.'.$relation->get_foreign_key(), $this->{$relation->get_foreign_key()});
 	}
 	
+	/**
+	 * format_join_table function.
+	 * 
+	 * @access public
+	 * @return string
+	 */
 	function format_join_table() 
   	{
     	$tables = func_get_args();
@@ -503,6 +714,13 @@ class ORM {
     	return implode('_', $tables);
   	}
 	
+	/**
+	 * fill_object function.
+	 * 
+	 * @access public
+	 * @param mixed $data (default: NULL)
+	 * @return object
+	 */
 	function fill_object($data = NULL)
 	{
 		switch (TRUE)
@@ -526,6 +744,13 @@ class ORM {
 		return $this;
 	}
 	
+	/**
+	 * fill_objects function.
+	 * 
+	 * @access public
+	 * @param mixed $data
+	 * @return object (a object with relation(s))
+	 */
 	function fill_objects($data) 
 	{
 		$object  = get_class($this);
@@ -541,8 +766,21 @@ class ORM {
 	
 }
 
+/**
+ * a class.
+ * 
+ * @extends ArrayObject
+ */
 class a extends ArrayObject {
 
+	/**
+	 * __call function.
+	 * 
+	 * @access public
+	 * @param string $method
+	 * @param array $arguments
+	 * @return void
+	 */
 	function __call($method, $arguments) 
 	{
 		$arguments = (isset($arguments[0])) ? $arguments[0] : NULL;
@@ -553,16 +791,34 @@ class a extends ArrayObject {
 		}
 	}
 
+	/**
+	 * first function.
+	 * 
+	 * @access public
+	 * @return object
+	 */
 	function first() 
 	{
 		return reset($this);
 	}
 	
+	/**
+	 * last function.
+	 * 
+	 * @access public
+	 * @return object
+	 */
 	function last() 
 	{
 		return end($this);
 	}
 	
+	/**
+	 * count function.
+	 * 
+	 * @access public
+	 * @return int
+	 */
 	function count()
 	{
 		return count($this);
@@ -572,6 +828,13 @@ class a extends ArrayObject {
 
 spl_autoload_register('orm_autoload');
 
+/**
+ * orm_autoload function.
+ * 
+ * @access public
+ * @param string $class
+ * @return void
+ */
 function orm_autoload($class) 
 {
 	$class = APPPATH.'models/'.strtolower($class).EXT;
