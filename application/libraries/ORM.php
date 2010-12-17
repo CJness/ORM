@@ -322,9 +322,8 @@ class ORM {
     	$this->CI()->load->library('ORM_validation');
     		
  		$validation = new ORM_validation();
-   		$results    = $validation->validate($this, $rules);
-
-		return ( ! is_array($results));
+ 		
+   		return $validation->validate($this, $rules);
   	}
 	
 	/**
