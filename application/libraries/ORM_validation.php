@@ -225,6 +225,13 @@ class ORM_Validation extends CI_Form_validation {
 		return ($str !== $this->object->{$field});
 	}
 	
+	/**
+	 * Checks if given value is unique in database
+	 *
+	 * @access	public
+	 * @param	string
+	 * @return	bool
+	 */
 	function unique($value) 
 	{
 		$field = array_search($value, get_object_vars($this->object));
@@ -237,7 +244,7 @@ class ORM_Validation extends CI_Form_validation {
 			$where['id !='] = $this->object->id;
 		}
 		
-		return (count($this->object->find($where)) == 0);
+		return (get_object_vars($this->object->find($where)) == 0);
 	}
 
 }
