@@ -831,9 +831,35 @@ class a extends ArrayObject {
 	{
 		$arguments = (isset($arguments[0])) ? $arguments[0] : NULL;
 	
-		foreach ($this as $object)
+		if (in_array($method, array('save', 'delete')))
 		{
-			$object->$method($arguments);
+			foreach ($this as $object)
+			{
+				$object->$method($arguments);
+			}
+		}
+		else
+		{
+			$objects = new a();
+			
+			foreach ($this as $object)
+			{
+				$object = $object->$method($arguments);
+			
+				if ($object instanceOf a)
+				{
+					foreach ($object as $item)
+					{
+						$objects[] = $item;
+					}
+				}
+				else
+				{
+					$objects[] = $object;
+				}
+			}
+			
+			return $objects;
 		}
 	}
 
