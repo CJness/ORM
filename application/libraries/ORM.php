@@ -102,6 +102,17 @@ class ORM {
 	}
 	
 	/**
+	 * validation function.
+	 * 
+	 * @access public
+	 * @return array
+	 */
+	function validation()
+	{
+		return array();
+	}
+	
+	/**
 	 * CI function.
 	 * 
 	 * @access public
@@ -299,6 +310,26 @@ class ORM {
   	{
   		return (isset($this->id) AND ! is_null($this->id));
   	}
+  	
+  	function validate($rules = NULL)
+  	{
+  		if ( ! is_array($rules))
+  		{
+  			$rules = $this->validation();
+  		}
+  		
+  		if ( ! count($rules))
+  		{
+  			return TRUE;
+  		}
+  		
+  		$this->CI()->load->library('form_validation');
+    	$this->CI()->load->library('ORM_validation');
+    		
+ 		$validation = new ORM_validation();
+ 		
+   		return $validation->validate($this, $rules);
+  	}
 	
 	/**
 	 * save function.
@@ -329,6 +360,11 @@ class ORM {
 					$this->fill_object($arg);
 				break;
 			}
+		}
+		
+		if ( ! $this->validate())
+		{
+			return FALSE;
 		}
 		
 		if ($this->exists())
