@@ -2,6 +2,15 @@
 
 class ORM_Validation extends CI_Form_validation {
 
+	
+	/**
+	 * validate function.
+	 * 
+	 * @access public
+	 * @param object &$object
+	 * @param array $rules
+	 * @return boolean
+	 */
 	function validate(&$object, $rules)
 	{
 		$this->object =& $object;
@@ -148,6 +157,10 @@ class ORM_Validation extends CI_Form_validation {
 		}
 
 		// Validation fails
+		$validation_errors = $this->CI->config->item('orm_validation_errors');
+		$validation_errors[ $this->object->table() ] = $this->_error_array;
+		$this->CI->config->set_item('orm_validation_errors', $validation_errors);
+		
 		return FALSE;
 	}
 	
@@ -237,14 +250,14 @@ class ORM_Validation extends CI_Form_validation {
 		$field = array_search($value, get_object_vars($this->object));
 		
 		$where = array();
-		$where[$field.' !='] = $value;
+		$where[ $field.' !='] = $value;
 		
 		if ($this->object->exists())
 		{
 			$where['id !='] = $this->object->id;
 		}
 		
-		return (get_object_vars($this->object->find($where)) == 0);
+		return ($this->object->count($where) === '0');
 	}
 
 }
