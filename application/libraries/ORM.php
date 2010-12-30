@@ -241,6 +241,21 @@ class ORM {
 		return $this->find(NULL, $options);
 	}
 	
+	
+	/**
+	 * count function.
+	 * 
+	 * @access public
+	 * @param array $where (default: NULL)
+	 * @return boolean
+	 */
+	function count($where = NULL)
+	{
+		$this->set_where($where);
+		
+		return $this->CI()->db->count_all_results($this->table());
+	}
+	
 	/**
 	 * find_one function.
 	 * 
@@ -308,7 +323,7 @@ class ORM {
 	 */
 	function exists()
   	{
-  		return (isset($this->id) AND ! is_null($this->id));
+  		return (isset($this->id) AND ! is_null($this->id) AND ! empty($this->id));
   	}
   	
   	function validate($rules = NULL)
@@ -621,6 +636,18 @@ class ORM {
 	function get_foreign_key()
 	{
 		return strtolower(get_class($this)).'_id';
+	}
+	
+	function get_validation_errors()
+	{
+		$validation_errors = $this->CI()->config->item('orm_validation_errors');
+		
+		if ( ! $validation_errors)
+		{
+			return array();
+		}
+		
+		return $validation_errors;
 	}
 	
 	/**
