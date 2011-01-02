@@ -596,6 +596,61 @@ class ORM {
 	}
 	
 	/**
+	 * logs function.
+	 * 
+	 * @access public
+	 * @return object(s)
+	 */
+	function logs()
+	{
+		$where = array(
+			'table' => $this->table(),
+			'key' => $this->id
+		);
+		
+		$log = new Log();
+		
+		return $log->find($where);
+	}
+	
+	/**
+	 * created function.
+	 * 
+	 * @access public
+	 * @return int
+	 */
+	function created()
+	{
+		$where = array(
+			'table' => $this->table(),
+			'key' => $this->id,
+			'action' => 'insert'
+		);
+	
+		$log = new Log();
+		
+		return $log->find_one($where)->date;
+	}
+	
+	/**
+	 * modified function.
+	 * 
+	 * @access public
+	 * @return int
+	 */
+	function modified()
+	{
+		$where = array(
+			'table' => $this->table(),
+			'key' => $this->id
+		);
+		
+		$log = new Log();
+		
+		return $log->last($where)->date;
+	}
+	
+	/**
 	 * sanitize function.
 	 * 
 	 * @access protected
