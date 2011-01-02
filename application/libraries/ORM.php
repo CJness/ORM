@@ -450,6 +450,7 @@ class ORM {
 				$this->id = $id;
 			}
 			
+			$this->log('insert');
 			$this->CI()->db->cache_delete_all();
 			
 			return TRUE;
@@ -470,6 +471,7 @@ class ORM {
 		
 		if ($this->CI()->db->update($this->table(), $this->sanitize())) 
 		{
+			$this->log('update');
 			$this->CI()->db->cache_delete_all();
 	
 	   		return TRUE;
@@ -567,6 +569,29 @@ class ORM {
 				$relation->{$this->get_foreign_key()} = NULL;
 				$relation->save();
 			break;
+		}
+	}
+	
+	/**
+	 * log function.
+	 * 
+	 * @access public
+	 * @param string $action
+	 * @return void
+	 */
+	function log($action)
+	{
+		if (get_class($this) != 'Log')
+		{
+			$log = new Log();
+			$log_data = array(
+				'table' => $this->table(),
+				'key' => $this->id,
+				'action' => $action,
+				'date' => time()
+			);
+			
+			$log->save($log_data);
 		}
 	}
 	
@@ -835,6 +860,79 @@ class ORM {
     	}
     	
     	return $objects;
+	}
+	
+}
+
+/**
+ * Log class.
+ * 
+ * @extends ORM
+ */
+class Log extends ORM {
+
+	/**
+	 * __construct function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	function __construct()
+	{
+		if ( ! $this->CI()->db->table_exists($this->table()))
+		{
+			$this->create_table();
+		}
+	}
+	
+	/**
+	 * table function.
+	 * 
+	 * @access public
+	 * @return string
+	 */
+	function table()
+	{
+		return 'orm_logs';
+	}
+	
+	/**
+	 * create_table function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	function create_table()
+	{
+		$this->CI()->load->dbforge();
+			
+		$fields = array(
+			'id' => array(
+				'type' => 'INT',
+				'constraint' => 10,
+				'auto_increment' => TRUE
+			),
+			'table' => array(
+				'type' => 'VARCHAR',
+				'constraint' => 32
+			),
+			'key' => array(
+				'type' => 'INT',
+				'constraint' => 10
+			),
+			'action' => array(
+				'type' => 'VARCHAR',
+				'constraint' => 32
+			),
+			'date' => array(
+				'type' => 'INT',
+				'constraint' => 10
+			)
+		);
+		
+		$this->CI()->dbforge->add_field($fields);
+		$this->CI()->dbforge->add_key('id', TRUE);
+		$this->CI()->dbforge->create_table($this->table());
 	}
 	
 }
