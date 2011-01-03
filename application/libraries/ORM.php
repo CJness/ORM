@@ -985,8 +985,11 @@ class Log extends ORM {
 			)
 		);
 		
+		$indexes = array('table', 'key', 'action', 'date');
+		
 		$this->CI()->dbforge->add_field($fields);
 		$this->CI()->dbforge->add_key('id', TRUE);
+		$this->CI()->dbforge->add_key($indexes);
 		$this->CI()->dbforge->create_table($this->table());
 	}
 	
